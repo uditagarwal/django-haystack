@@ -203,6 +203,31 @@ class LocationField(SearchField):
         return value
 
 
+class MultiLocationField(LocationField):
+    field_type = 'multilocation'
+
+    def __init__(self, **kwargs):
+        if kwargs.get('faceted'):
+            raise SearchError("'%s' fields can not be faceted" % self.__class__.__name__)
+
+        if kwargs.get('use_template') is True:
+            raise SearchFieldError("'%s' fields can not use templates to prepare their data." % self.__class__.__name__)
+
+        super(LocationField, self).__init__(**kwargs)
+
+        self.is_multivalued = True
+
+    def prepare(self, obj):
+       return self.convert(super(MultiLocationField, self).prepare(obj))
+
+    def convert(self, value):
+       if value is None:
+           return None
+
+       convert_f = super(MultiLocationField, self).convert
+       return map(convert_f, value)
+
+
 class NgramField(CharField):
     field_type = 'ngram'
 
